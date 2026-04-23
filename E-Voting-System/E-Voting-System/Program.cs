@@ -1,3 +1,4 @@
+using Microsoft.AspNetCore.Identity;
 using E_Voting_System.Entities;
 using E_Voting_System.Hubs;
 using Microsoft.EntityFrameworkCore;
@@ -19,6 +20,9 @@ namespace E_Voting_System
                 options.UseSqlServer(conn);
             });
 
+            builder.Services.AddIdentity<User, IdentityRole>()
+                .AddEntityFrameworkStores<AppDbContext>()
+                .AddDefaultTokenProviders();
 
             // Add services to the container.
             builder.Services.AddControllersWithViews();
@@ -39,6 +43,8 @@ namespace E_Voting_System
             app.UseStaticFiles();
 
             app.UseRouting();
+            
+            app.UseAuthentication();
 
             app.UseAuthorization();
 

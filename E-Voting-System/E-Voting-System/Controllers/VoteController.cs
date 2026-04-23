@@ -4,29 +4,36 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.SignalR;
 using Microsoft.EntityFrameworkCore;
 using System.Threading.Tasks;
+using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Identity;
 
 namespace E_Voting_System.Controllers
 {
+    [Authorize]
     public class VoteController : Controller
     {
         private readonly IHubContext<VotingHub> _votingHub;
         private readonly AppDbContext _context;
-        public VoteController(IHubContext<VotingHub> votingHub, AppDbContext context)
+        private readonly UserManager<User> _userManager;
+
+        public VoteController(IHubContext<VotingHub> votingHub, AppDbContext context, UserManager<User> userManager)
         {
             _votingHub = votingHub;
             _context = context;
+            _userManager = userManager;
         }
 
 
         public  async Task<IActionResult> Index()
         {
-            if (Request.Cookies["UserId"] == null)
+            var userId = _userManager.GetUserId(User);
+            if (userId == null)
                 return RedirectToAction("Index", "Home");
 
 
             int voted = 0;
             
-            var user = await _context.Users.FirstOrDefaultAsync(u => u.Id == Request.Cookies["UserId"]);
+            var user = await _context.Users.FirstOrDefaultAsync(u => u.Id == userId);
 
             if (user == null)
                 return NotFound();
@@ -46,12 +53,13 @@ namespace E_Voting_System.Controllers
 
         public async Task<IActionResult> Vote1()
         {
-            if (Request.Cookies["UserId"] == null)
+            var userId = _userManager.GetUserId(User);
+            if (userId == null)
                 return RedirectToAction("Index", "Home");
 
             int voted = 0;
 
-            var user = await _context.Users.FirstOrDefaultAsync(u => u.Id == Request.Cookies["UserId"]);
+            var user = await _context.Users.FirstOrDefaultAsync(u => u.Id == userId);
 
             if (user == null)
                 return NotFound();
@@ -78,12 +86,13 @@ namespace E_Voting_System.Controllers
 
         public async Task<IActionResult> Vote2()
         {
-            if (Request.Cookies["UserId"] == null)
+            var userId = _userManager.GetUserId(User);
+            if (userId == null)
                 return RedirectToAction("Index", "Home");
 
             int voted = 0;
 
-            var user = await _context.Users.FirstOrDefaultAsync(u => u.Id == Request.Cookies["UserId"]);
+            var user = await _context.Users.FirstOrDefaultAsync(u => u.Id == userId);
 
             if (user == null)
                 return NotFound();

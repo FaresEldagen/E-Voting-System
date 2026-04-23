@@ -3,24 +3,27 @@ using E_Voting_System.Entities;
 using E_Voting_System.Models;
 using E_Voting_System.ViewModels;
 using Microsoft.AspNetCore.Mvc;
-using Microsoft.IdentityModel.Tokens;
+using Microsoft.AspNetCore.Identity;
+using System.Threading.Tasks;
 
 namespace E_Voting_System.Controllers
 {
     public class HomeController : Controller
     {
         private readonly ILogger<HomeController> _logger;
-        private readonly AppDbContext _context;
+        private readonly SignInManager<User> _signInManager;
+        private readonly UserManager<User> _userManager;
 
-        public HomeController(ILogger<HomeController> logger, AppDbContext context)
+        public HomeController(ILogger<HomeController> logger, SignInManager<User> signInManager, UserManager<User> userManager)
         {
             _logger = logger;
-            _context = context;
+            _signInManager = signInManager;
+            _userManager = userManager;
         }
 
         public IActionResult Index()
         {
-            if (Request.Cookies["UserId"] != null)
+            if (User.Identity != null && User.Identity.IsAuthenticated)
                 return RedirectToAction("Index", "Vote");
 
             return View();
@@ -28,37 +31,34 @@ namespace E_Voting_System.Controllers
 
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public IActionResult Login(LoginViewModel vm)
+        public async Task<IActionResult> Login(LoginViewModel vm)
         {
             if (!ModelState.IsValid)
                 return RedirectToAction("Index");
 
-            var tempId = Request.Cookies["UserId"];
-
             try
             {
-                if(tempId.IsNullOrEmpty())
+                // In the future, this is where you would process the ID card using the AI model
+                // and extract the ID number. For now, we simulate finding or creating the user.
+                
+                string userId = Guid.NewGuid().ToString("N").Substring(0, 14);
+
+                var user = await _userManager.FindByIdAsync(userId);
+                if (user == null)
                 {
-                    tempId = Guid.NewGuid().ToString("N").Substring(0, 14);
-                    Response.Cookies.Append("UserId", tempId, new CookieOptions
+                    user = new User { Id = userId, UserName = userId, Vote = 0 };
+                    var createResult = await _userManager.CreateAsync(user);
+                    if (!createResult.Succeeded)
                     {
-                        Expires = DateTimeOffset.UtcNow.AddMinutes(30),
-                        HttpOnly = true,
-                        IsEssential = true,
-                        Secure = true,
-                        SameSite = SameSiteMode.Strict
-                    });
+                        return View("Index");
+                    }
                 }
-                var user = _context.Users.Find(tempId);
-                if(user == null)
-                {
-                    _context.Users.Add(new User { Id = tempId!, Vote = 0 });
-                    _context.SaveChanges();
-                }
+
+                // Securely sign in the user using Identity (encrypted claim-based cookie)
+                await _signInManager.SignInAsync(user, isPersistent: true);
             }
-            catch(Exception ex)
+            catch (Exception ex)
             {
-                Response.Cookies.Delete("UserId");
                 Console.WriteLine(ex.Message);
                 return View("Index");
             }
@@ -66,11 +66,9 @@ namespace E_Voting_System.Controllers
             return RedirectToAction("Index", "Vote");
         }
 
-        public IActionResult Logout()
+        public async Task<IActionResult> Logout()
         {
-            if (Request.Cookies["UserId"] != null)
-                Response.Cookies.Delete("UserId");
-
+            await _signInManager.SignOutAsync();
             return RedirectToAction("Index");
         }
 

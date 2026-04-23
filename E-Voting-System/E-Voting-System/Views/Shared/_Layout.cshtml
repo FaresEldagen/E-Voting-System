@@ -15,7 +15,7 @@
         <a href="index.html" class="brand">Vote<span>Sec</span></a>
         <span class="nav-pill">LIVE ELECTION · 2026</span>
 
-        @if (Context.Request.Cookies["UserId"] != null)
+        @if (User.Identity.IsAuthenticated)
         {
             <a href="@Url.Action("Logout", "Home")" class="nav-link-custom">
                 Logout

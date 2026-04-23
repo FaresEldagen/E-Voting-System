@@ -1,7 +1,8 @@
-﻿namespace E_Voting_System.Entities;
+﻿using Microsoft.AspNetCore.Identity;
 
-public class User 
+namespace E_Voting_System.Entities;
+
+public class User : IdentityUser
 {
-    public string Id { get; set; }
     public int Vote { get; set; }
 }
