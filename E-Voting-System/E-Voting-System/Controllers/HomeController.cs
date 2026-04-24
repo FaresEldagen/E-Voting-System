@@ -37,7 +37,7 @@ namespace E_Voting_System.Controllers
         public async Task<IActionResult> Login(LoginViewModel vm)
         {
             if (!ModelState.IsValid)
-                return RedirectToAction("Index");
+                return View("Index", vm);
 
             try
             {
@@ -53,7 +53,8 @@ namespace E_Voting_System.Controllers
                     var createResult = await _userManager.CreateAsync(user);
                     if (!createResult.Succeeded)
                     {
-                        return View("Index");
+                        ModelState.AddModelError(string.Empty, string.Join(", ", createResult.Errors.Select(e => e.Description)));
+                        return View("Index", vm);
                     }
                 }
 
@@ -63,7 +64,8 @@ namespace E_Voting_System.Controllers
             catch (Exception ex)
             {
                 Console.WriteLine(ex.Message);
-                return View("Index");
+                ModelState.AddModelError(string.Empty, ex.Message);
+                return View("Index", vm);
             }
 
             return RedirectToAction("Index", "Vote");

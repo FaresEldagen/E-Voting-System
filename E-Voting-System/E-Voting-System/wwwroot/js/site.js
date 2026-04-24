@@ -79,7 +79,7 @@
                 title: 'Missing Documents',
                 icon: 'bi-file-earmark-x',
                 type: 'danger',
-                msg: 'Please upload both your National ID image and a selfie holding your ID before submitting.'
+                msg: 'Please upload both your National ID image and your selfie before submitting.'
             });
             return;
         }

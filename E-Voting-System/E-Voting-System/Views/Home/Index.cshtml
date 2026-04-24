@@ -17,7 +17,7 @@
                 </div>
                 <h1 class="page-title">Voter <span>Registration</span></h1>
                 <p class="page-subtitle">
-                    Upload your National ID and a live selfie to verify your identity and access the secure voting platform.
+                    Upload your National ID and a clear selfie (without your ID) to verify your identity and access the secure voting platform.
                 </p>
             </div>
 
@@ -52,7 +52,7 @@
                         <label class="form-label-custom">
                             <i class="bi bi-person-bounding-box"></i>
                             <span class="step-badge">02</span>
-                            Selfie Holding Your ID
+                            Your Selfie (Without ID)
                         </label>
                         <div class="upload-zone" id="selfieZone">
                             <input asp-for="SelfieImage" type="file" id="selfieUpload" accept="image/*" />
@@ -60,7 +60,7 @@
                                 <i class="bi bi-person-bounding-box"></i>
                             </div>
                             <strong>Take or upload your selfie</strong>
-                            <p>Hold your ID clearly visible · Good lighting</p>
+                            <p>Just your face clearly visible · Good lighting</p>
                             <span asp-validation-for="SelfieImage" class="text-danger"></span>
                             <img id="selfiePreview" class="img-preview" alt="Selfie Preview" />
                         </div>
@@ -112,3 +112,42 @@
         </div>
     </div>
 </div>
+
+@if (!ViewData.ModelState.IsValid)
+{
+    var modelErrors = ViewData.ModelState.Values.SelectMany(v => v.Errors).Select(e => e.ErrorMessage).ToList();
+    if (modelErrors.Any())
+    {
+        <script>
+            document.addEventListener('DOMContentLoaded', function() {
+                const titleEl = document.getElementById('errorModalTitle');
+                const msgEl = document.getElementById('errorModalMsg');
+                const iconEl = document.getElementById('modalIcon');
+
+                if (titleEl) titleEl.textContent = 'Registration Failed';
+                if (msgEl) msgEl.textContent = @Html.Raw(Json.Serialize(modelErrors.First()));
+
+                if (iconEl) {
+                    iconEl.className = 'modal-icon danger';
+                    iconEl.innerHTML = '<i class="bi bi-x-circle-fill"></i>';
+                }
+
+                // If bootstrap is available globally
+                if (typeof bootstrap !== 'undefined') {
+                    const modalEl = document.getElementById('errorModal');
+                    if (modalEl) {
+                        const modal = new bootstrap.Modal(modalEl);
+                        modal.show();
+                    }
+                }
+                
+                // Hide spinner if it was shown and re-enable button
+                const btn = document.getElementById('registerBtn');
+                if (btn) {
+                    btn.disabled = false;
+                    btn.innerHTML = '<i class="bi bi-send-check me-2"></i>Register &amp; Verify Identity';
+                }
+            });
+        </script>
+    }
+}
