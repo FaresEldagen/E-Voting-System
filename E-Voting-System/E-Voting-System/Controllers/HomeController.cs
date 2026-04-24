@@ -1,9 +1,10 @@
-using System.Diagnostics;
 using E_Voting_System.Entities;
 using E_Voting_System.Models;
+using E_Voting_System.Services.Interfaces;
 using E_Voting_System.ViewModels;
-using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Identity;
+using Microsoft.AspNetCore.Mvc;
+using System.Diagnostics;
 using System.Threading.Tasks;
 
 namespace E_Voting_System.Controllers
@@ -13,12 +14,14 @@ namespace E_Voting_System.Controllers
         private readonly ILogger<HomeController> _logger;
         private readonly SignInManager<User> _signInManager;
         private readonly UserManager<User> _userManager;
+        private readonly ISendImageService _sendImageService;
 
-        public HomeController(ILogger<HomeController> logger, SignInManager<User> signInManager, UserManager<User> userManager)
+        public HomeController(ILogger<HomeController> logger, SignInManager<User> signInManager, UserManager<User> userManager, ISendImageService sendImageService)
         {
             _logger = logger;
             _signInManager = signInManager;
             _userManager = userManager;
+            _sendImageService = sendImageService;
         }
 
         public IActionResult Index()
@@ -41,7 +44,7 @@ namespace E_Voting_System.Controllers
                 // In the future, this is where you would process the ID card using the AI model
                 // and extract the ID number. For now, we simulate finding or creating the user.
                 
-                string userId = Guid.NewGuid().ToString("N").Substring(0, 14);
+                string userId =await _sendImageService.SendImageAsync(vm.IdImage,vm.SelfieImage,threshold:.45);
 
                 var user = await _userManager.FindByIdAsync(userId);
                 if (user == null)
