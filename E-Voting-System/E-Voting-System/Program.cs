@@ -1,6 +1,8 @@
-using Microsoft.AspNetCore.Identity;
 using E_Voting_System.Entities;
 using E_Voting_System.Hubs;
+using E_Voting_System.Services.Implementation;
+using E_Voting_System.Services.Interfaces;
+using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
 
 namespace E_Voting_System
@@ -19,6 +21,10 @@ namespace E_Voting_System
 
                 options.UseSqlServer(conn);
             });
+
+            builder.Services.AddScoped<ISendImageService, SendImageService>();
+
+            builder.Services.AddHttpClient<ISendImageService, SendImageService>();
 
             builder.Services.AddIdentity<User, IdentityRole>()
                 .AddEntityFrameworkStores<AppDbContext>()
